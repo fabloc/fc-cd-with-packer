@@ -1,0 +1,34 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Transform: 'Aliyun::Serverless-2018-04-03'
+Resources:
+  a365-fc-srv:
+    Type: 'Aliyun::Serverless::Service'
+    Properties:
+      Description: This is a365-fc-srv service
+      Policies:
+        - AliyunOSSReadOnlyAccess
+        - AliyunECSFullAccess
+        - AliyunVPCFullAccess
+        - AliyunEIPFullAccess
+        - AliyunESSFullAccess
+        - AliyunOOSFullAccess
+    a365-fc:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: index.handler
+        Runtime: python3
+        Timeout: 600
+        MemorySize: 512
+        CodeUri: code/
+      Events:
+        oss-trigger-name:
+          Type: OSS # trigger type
+          Properties:
+            BucketName: a365-ci-cd # oss bucket name
+            Events:
+              - oss:ObjectCreated:*
+            Filter:
+              Key:
+                Prefix: releases/
+                Suffix: .*
+            InvocationRole: acs:ram::5346505898868765:role/aliyunosseventnotificationrole
