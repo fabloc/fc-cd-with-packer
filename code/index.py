@@ -15,9 +15,14 @@ from aliyunsdkess.request.v20140828.DescribeScalingGroupsRequest import Describe
 
 def handler(event, context):
 
+  #Retrieve Env variable telling whether execution is 'local' (not in FC PaaS)
+  local = bool(os.getenv('local', ""))
+
+  #Retrieve credentials (in local, no token provided)
   access_key = context.credentials.accessKeyId
   secret_key = context.credentials.accessKeySecret
-  security_token = context.credentials.securityToken
+  if not local:
+    security_token = context.credentials.securityToken
   region     = "eu-central-1"
   scaling_group_name = "asg-oos"
   logger = logging.getLogger()
@@ -68,8 +73,12 @@ def handler(event, context):
     logger.info("Generated Image Id: " + image_id)
 
     #Retrieve Autoscaling Group information. Filtering is based on ASG name (no filtering available on Tags)
-    sts_token_credential = StsTokenCredential(access_key, secret_key, security_token)
-    client = AcsClient(region_id=region, credential=sts_token_credential)
+    if (local):
+      client = AcsClient(region_id=region, ak=access_key, secret=secret_key)
+    else:
+      sts_token_credential = StsTokenCredential(access_key, secret_key, security_token)
+      client = AcsClient(region_id=region, credential=sts_token_credential)
+
     request = DescribeScalingGroupsRequest()
     request.set_accept_format('json')
 

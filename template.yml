@@ -1,10 +1,10 @@
 ROSTemplateFormatVersion: '2015-09-01'
 Transform: 'Aliyun::Serverless-2018-04-03'
 Resources:
-  a365-fc-srv:
+  packer-fc-srv:
     Type: 'Aliyun::Serverless::Service'
     Properties:
-      Description: This is a365-fc-srv service
+      Description: This is a Function Compute service that contains one FC that will be triggered when a new file is pushed in the 'releases/' folder. 
       Policies:
         - AliyunOSSReadOnlyAccess
         - AliyunECSFullAccess
@@ -12,7 +12,10 @@ Resources:
         - AliyunEIPFullAccess
         - AliyunESSFullAccess
         - AliyunOOSFullAccess
-    a365-fc:
+      LogConfig:
+        Project: packer-ci-cd-log
+        Logstore: packer-ci-cd-store
+    packer-fc:
       Type: 'Aliyun::Serverless::Function'
       Properties:
         Handler: index.handler
@@ -21,14 +24,13 @@ Resources:
         MemorySize: 512
         CodeUri: code/
       Events:
-        oss-trigger-name:
-          Type: OSS # trigger type
+        oss-trigger:
+          Type: OSS
           Properties:
-            BucketName: a365-ci-cd # oss bucket name
+            BucketName: packer-ci-cd
             Events:
-              - oss:ObjectCreated:*
+              - 'oss:ObjectCreated:*'
             Filter:
               Key:
                 Prefix: releases/
                 Suffix: .*
-            InvocationRole: acs:ram::5346505898868765:role/aliyunosseventnotificationrole

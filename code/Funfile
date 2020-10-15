@@ -1,0 +1,7 @@
+RUNTIME python3
+RUN fun-install pip install packer.py
+RUN fun-install pip install aliyun-python-sdk-oos
+RUN fun-install pip install aliyun-python-sdk-ess
+RUN wget -L https://releases.hashicorp.com/packer/1.6.4/packer_1.6.4_linux_amd64.zip; \
+    unzip packer_1.6.4_linux_amd64.zip; \
+    rm packer_1.6.4_linux_amd64.zip;
